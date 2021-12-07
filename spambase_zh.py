@@ -140,3 +140,39 @@ plt.ylabel('True Positive Rate');
 plt.title('Receiver operating characteristic curve');
 plt.legend(loc="lower right");
 plt.show();
+
+
+Max_K = 50;
+DB = np.zeros((Max_K-2));
+for i in range(Max_K-2):
+    n_c = i+2;
+    kmeans = KMeans(n_clusters=n_c, random_state=2021);
+    kmeans.fit(X);
+    labels = kmeans.labels_;
+    centers = kmeans.cluster_centers_;
+    DB[i] = davies_bouldin_score(X,labels);  # minél kisebb annál jobb, a 2 klaszter tűnik a legoptimálisabbnak
+
+optimal_n_c, = np.where(np.isclose(DB, DB.min()))[0] + 2;
+
+print(f'Minimum Davies-Bouldin index: {DB.min()}');
+print(f'Optimal number of cluster: {optimal_n_c}');
+
+kmeans = KMeans(n_clusters=optimal_n_c, random_state=2021);
+kmeans.fit(X);
+labels = kmeans.labels_;
+centers = kmeans.cluster_centers_;
+score = kmeans.score(X);
+
+pca = PCA(n_components=2);
+pca.fit(X);
+data_pc = pca.transform(X);
+centers_pc = pca.transform(centers);
+
+fig = plt.figure(1);
+plt.title('Clustering of the Iris data after PCA');
+plt.xlabel('PC1');
+plt.ylabel('PC2');
+plt.scatter(data_pc[:,0],data_pc[:,1],s=50,c=labels);
+plt.scatter(centers_pc[:,0],centers_pc[:,1],s=200,c='red',marker='X');
+plt.legend();
+plt.show();
